@@ -10,9 +10,12 @@ export const DOCUMENT_END: EditorPosition = {
 	ch: Infinity,
 };
 
+export const SAME_CAPTURE_GROUP = "$&";
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 function escapeRegExp(str: string): string {
-	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+	// Do not escape dollar signs to match the whole group
+	return str.replace(/[.*+?^{}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 // Replaces all instances of a string except those inside brackets.
@@ -28,7 +31,7 @@ export function replaceExceptBrackets(
 	const escapedFrom = escapeRegExp(from);
 	const pattern = new RegExp(
 		`(?!\\[[^\\]]*)${escapedFrom}(?![^\\[]*\\])`,
-		"g"
+		"gi"
 	);
 	const replaced = content.replace(pattern, to);
 

@@ -71,4 +71,22 @@ describe("replaceExceptBrackets", () => {
 		const result = replaceExceptBrackets(from, to, content);
 		expect(result).toBe(expected);
 	});
+
+	test("case-insensitive matching", () => {
+		const from = "hello";
+		const to = "world";
+		const content = "HELLO";
+		const expected = "world";
+		const result = replaceExceptBrackets(from, to, content);
+		expect(result).toBe(expected);
+	});
+
+	test("allows for capture groups in the replacement", () => {
+		const from = "heLLo";
+		const to = "$&";
+		const content = "HELLO";
+		const expected = content;
+		const result = replaceExceptBrackets(from, to, content);
+		expect(result).toBe(expected);
+	});
 });
