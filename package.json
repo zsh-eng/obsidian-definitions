@@ -34,6 +34,7 @@
 		"mdast-util-from-markdown": "^2.0.0",
 		"mdast-util-wiki-link": "github:zsh-eng/mdast-util-wiki-link#from-markdown-new-version",
 		"micromark-extension-wiki-link": "^0.0.4",
+		"quick-lru": "^6.1.1",
 		"remark": "^14.0.3",
 		"remark-parse": "^10.0.2",
 		"remark-stringify": "^10.0.3",
