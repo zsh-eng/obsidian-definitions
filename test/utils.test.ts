@@ -1,4 +1,9 @@
-import { replaceExceptBrackets } from "../utils";
+import {
+	replaceExceptBrackets,
+	parseDefinitions,
+	Definition,
+	replaceDefinitions,
+} from "../utils";
 
 describe("replaceExceptBrackets", () => {
 	test("empty string is not replaced", () => {
@@ -88,5 +93,199 @@ describe("replaceExceptBrackets", () => {
 		const expected = content;
 		const result = replaceExceptBrackets(from, to, content);
 		expect(result).toBe(expected);
+	});
+	// Add test case for markdown links
+	test("replaces with markdown internal link successfully", () => {
+		const from = "hello";
+		const to = "[[test.md#hello]]";
+		const content = "hello";
+		const expected = "[[test.md#hello]]";
+		const result = replaceExceptBrackets(from, to, content);
+		expect(result).toBe(expected);
+	});
+});
+
+describe("parseDefinitions", () => {
+	const filename = "sample.md";
+
+	test("parses a single definition", () => {
+		const content = `# Term\naliases: Alias1, Alias2`;
+
+		const expected = [
+			{
+				filename,
+				heading: "Term",
+				aliases: ["Term", "Alias1", "Alias2"],
+			},
+		];
+
+		const result = parseDefinitions(filename, content);
+
+		expect(result).toEqual(expected);
+	});
+
+	test("parses multiple definitions", () => {
+		const content = `# Term1\naliases: Alias1, Alias2
+# Term2\naliases: Alias3, Alias4`;
+		const expected = [
+			{
+				filename,
+				heading: "Term1",
+				aliases: ["Term1", "Alias1", "Alias2"],
+			},
+			{
+				filename,
+				heading: "Term2",
+				aliases: ["Term2", "Alias3", "Alias4"],
+			},
+		];
+
+		const result = parseDefinitions(filename, content);
+		expect(result).toEqual(expected);
+	});
+
+	test("handles extra whitespace in heading and aliases", () => {
+		const content = `#   Term   \naliases:   Alias1 ,   Alias2  `;
+		const expected = [
+			{
+				filename,
+				heading: "Term",
+				aliases: ["Term", "Alias1", "Alias2"],
+			},
+		];
+
+		const result = parseDefinitions(filename, content);
+
+		expect(result).toEqual(expected);
+	});
+
+	test("handles different newline characters", () => {
+		const content = `# Term1\r\naliases: Alias1, Alias2\n# Term2\naliases: Alias3, Alias4`;
+
+		const expected = [
+			{
+				filename,
+				heading: "Term1",
+				aliases: ["Term1", "Alias1", "Alias2"],
+			},
+			{
+				filename,
+				heading: "Term2",
+				aliases: ["Term2", "Alias3", "Alias4"],
+			},
+		];
+
+		const result = parseDefinitions(filename, content);
+		expect(result).toEqual(expected);
+	});
+
+	test("ignores headings with depth greater than 1", () => {
+		const content = `## Heading\naliases: Alias1, Alias2`;
+
+		const expected: Definition[] = [];
+
+		const result = parseDefinitions(filename, content);
+
+		expect(result).toEqual(expected);
+	});
+
+	test("ignores match when there are blank lines between heading and aliases", () => {
+		const content = `# Term1\n\naliases: Alias1, Alias2`;
+
+		const expected: Definition[] = [];
+
+		const result = parseDefinitions(filename, content);
+
+		expect(result).toEqual(expected);
+	});
+});
+
+describe("parseMarkdownFile", () => {
+	const content = `
+	# Obsidian
+
+	aliases:Obsidian.md,Note-taking,Markdown
+	
+	## What is Obsidian?
+	Obsidian is a powerful knowledge base that works on top of a local folder of plain text Markdown files.
+	`;
+	// TODO Test multiple headings
+	// TODO Test missing heading
+	// TODO Test missing aliases
+	// TODO Test missing content
+	// TODO Test Markdown formatting (e.g. Admonitions in Obsidian)
+});
+
+describe("replaceDefinitions", () => {
+	const testContent = `
+# Term1
+aliases: Alias1, Alias2
+  `;
+
+// Note that the text cannot be indented
+	const testFileContent = `
+What's up with Term1 and Alias2 ?
+
+\`\`\`
+Some code block here Term1
+\`\`\`
+
+[Link to Term1](#term1)
+
+Test test 
+  `;
+	test("replaces successfully", () => {
+		const fileContent = `What's up with Term1 and Alias2 ?`;
+		// Alias which is the same name as the heading will still be an alias
+		const out = `What's up with [[test.md#Term1|Term1]] and [[test.md#Term1|Alias2]] ?`;
+		const definitions = parseDefinitions("test.md", testContent);
+		expect(definitions.length).toEqual(1);
+		expect(definitions[0].aliases.length).toEqual(3);
+
+		const replaced = replaceDefinitions(definitions, fileContent);
+		expect(replaced).toEqual(out);
+	});
+
+	test("does not replace code blocks", () => {
+		const definitions = parseDefinitions("test.md", testContent);
+
+		const replaced = replaceDefinitions(definitions, testFileContent);
+		expect(replaced).toContain("Some code block here Term1");
+	});
+
+	test("does not replace links", () => {
+		const definitions = parseDefinitions("test.md", testContent);
+
+		const replaced = replaceDefinitions(definitions, testFileContent);
+		expect(replaced).toContain("[Link to Term1](#term1)");
+	});
+	
+	test("replaces at start of file", () => {
+		const fileContent ="Term1"
+		const definitions = parseDefinitions("test.md", testContent);
+		const replaced = replaceDefinitions(definitions, fileContent);
+		expect(replaced).toEqual("[[test.md#Term1|Term1]]")
+	})
+
+	test("replaces bolded text", () => {
+		const fileContent ="**Term1**"
+		const definitions = parseDefinitions("test.md", testContent);
+		const replaced = replaceDefinitions(definitions, fileContent);
+		expect(replaced).toEqual("**[[test.md#Term1|Term1]]**")
+	})
+
+	test("replaces text in bolded text", () => {
+		const fileContent = `
+# Test
+
+**Term1**
+
+Test test
+
+**Alias1**
+		`;
+		const definitions = parseDefinitions("test.md", testContent);
+		const replaced = replaceDefinitions(definitions, fileContent);
+		expect(replaced).toContain("[[test.md#Term1|Term1]]");
 	});
 });
