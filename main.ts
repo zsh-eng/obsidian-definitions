@@ -58,21 +58,10 @@ export default class DefinitionsPlugin extends Plugin {
 		return totalLength / fileContents.length;
 	}
 
-	// Test function for generating markdown links
-	generateMarkdownLinks(sourcePath: string): string[] {
-		const { vault, fileManager } = this.app;
-
-		const links = vault.getMarkdownFiles().map((file) => {
-			const link = fileManager.generateMarkdownLink(
-				file,
-				sourcePath,
-				"",
-				file.basename.toUpperCase()
-			);
-			return link;
-		});
-
-		return links;
+	// Generates the link for a single definition
+	generateDefinitionLink(definition: Definition): string {
+		const { filename, heading } = definition;
+		return `[[${filename}#${heading}|${heading}]]`;
 	}
 
 	// Get the files from the definitions folder
@@ -194,18 +183,37 @@ export default class DefinitionsPlugin extends Plugin {
 					return;
 				}
 
-				new DefinitionsModal(this.app, this).open();
+				const onChooseCallBack = (definition: Definition) => {
+					new Notice(`You picked: ${definition.heading}`);
+					this.openDefinition(definition);
+				};
+
+				new DefinitionsModal(this.app, this, onChooseCallBack).open();
 			},
 		});
 
 		// Adds definitions to the current file
 		this.addCommand({
-			id: "add-definitions-current-file",
-			name: "Add definitions for current file",
+			id: "Link-definitions-current-file",
+			name: "Link definitions for current file",
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				// Refresh definitions if command is run manually
 				await this.refreshDefinitions();
 				await this.replaceDefinitionsInEditor(editor);
+			},
+		});
+
+		this.addCommand({
+			id: "add-link-to-definition",
+			name: "Add link to definition",
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				const onChooseCallBack = (definition: Definition) => {
+					new Notice(`You picked: ${definition.heading}`);
+					const link = this.generateDefinitionLink(definition);
+					editor.replaceSelection(link);
+				};
+
+				new DefinitionsModal(this.app, this, onChooseCallBack).open();
 			},
 		});
 
@@ -237,9 +245,20 @@ export default class DefinitionsPlugin extends Plugin {
 class DefinitionsModal extends SuggestModal<Definition> {
 	plugin: DefinitionsPlugin;
 
-	constructor(app: App, plugin: DefinitionsPlugin) {
+	constructor(
+		app: App,
+		plugin: DefinitionsPlugin,
+		onChooseCallBack?: (
+			definition: Definition,
+			evt: MouseEvent | KeyboardEvent
+		) => void
+	) {
 		super(app);
 		this.plugin = plugin;
+
+		if (onChooseCallBack) {
+			this.onChooseSuggestion = onChooseCallBack;
+		}
 	}
 
 	getSuggestions(inputStr: string): Definition[] {
