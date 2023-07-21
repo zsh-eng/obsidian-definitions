@@ -17,7 +17,7 @@ import {
 	checkDuplicateDefinitions,
 	parseDefinitions,
 	replaceDefinitions,
-} from "utils";
+} from "utils/utils";
 
 interface DefinitionsPluginSettings {
 	mySetting: string;

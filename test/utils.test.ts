@@ -4,7 +4,7 @@ import {
 	Definition,
 	replaceDefinitions,
 	checkDuplicateDefinitions,
-} from "../utils";
+} from "../utils/utils";
 
 describe("replaceExceptBrackets", () => {
 	test("empty string is not replaced", () => {
