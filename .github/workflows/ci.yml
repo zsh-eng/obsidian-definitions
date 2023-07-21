@@ -1,0 +1,13 @@
+name: "CI"
+on:
+    pull_request:
+    push:
+        branches:
+            - ${DEFAULT_BRANCH}
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Jest Annotations & Coverage
+              uses: mattallty/jest-github-action@v1.0.3
