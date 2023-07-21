@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-definitions",
 	"name": "Definitions",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"minAppVersion": "0.15.0",
 	"description": "This plugin allows you to create definitions that can be reused within your Obsidian Vault.",
 	"author": "zsh-eng",
