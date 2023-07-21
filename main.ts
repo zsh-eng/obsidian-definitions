@@ -14,6 +14,7 @@ import {
 	DOCUMENT_END,
 	DOCUMENT_START,
 	Definition,
+	checkDuplicateDefinitions,
 	parseDefinitions,
 	replaceDefinitions,
 } from "utils";
@@ -82,6 +83,23 @@ export default class DefinitionsPlugin extends Plugin {
 		return [];
 	}
 
+	makeNoticeIfDuplicateDefinitions() {
+		const duplicates = checkDuplicateDefinitions(this.definitions);
+		if (Object.keys(duplicates).length == 0) {
+			return;
+		}
+		let message = "Duplicate definitions found:";
+
+		for (const [alias, definitions] of Object.entries(duplicates)) {
+			const definitionsString = definitions
+				.map((d) => d.heading)
+				.join(", ");
+			message += `\n\nThe alias "${alias}" is duplicated for the following:\n${definitionsString}`;
+		}
+
+		new Notice(message);
+	}
+
 	// Parse the definitions from the files
 	async refreshDefinitions(): Promise<void> {
 		const definitionFiles = this.getDefinitionFiles();
@@ -95,6 +113,7 @@ export default class DefinitionsPlugin extends Plugin {
 		});
 		this.definitions = definitions;
 
+		this.makeNoticeIfDuplicateDefinitions();
 		return;
 	}
 
