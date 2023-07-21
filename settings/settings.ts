@@ -15,6 +15,7 @@ export class DefinitionsSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		this.addFolderSetting();
+		this.addSaveSetting();
 	}
 
 	addFolderSetting(): void {
@@ -29,6 +30,20 @@ export class DefinitionsSettingTab extends PluginSettingTab {
 						this.plugin.settings.definitionsFolder = new_folder;
 						this.plugin.saveSettings();
 					});
+			});
+	}
+
+	addSaveSetting(): void {
+		new Setting(this.containerEl)
+			.setName("Add links on save")
+			.setDesc("Add links to definitions when saving a file")
+			.addToggle((cb) => {
+				cb.setValue(this.plugin.settings.addLinksOnSave).onChange(
+					(value) => {
+						this.plugin.settings.addLinksOnSave = value;
+						this.plugin.saveSettings();
+					}
+				);
 			});
 	}
 }
