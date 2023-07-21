@@ -9,12 +9,6 @@ import * as wikiLink from "mdast-util-wiki-link";
 import QuickLRU from "quick-lru";
 import { Root } from "mdast-util-from-markdown/lib";
 
-export type Definition = {
-	filename: string;
-	heading: string;
-	aliases: string[];
-};
-
 export const DOCUMENT_START: EditorPosition = {
 	line: 0,
 	ch: 0,
@@ -25,7 +19,41 @@ export const DOCUMENT_END: EditorPosition = {
 	ch: Infinity,
 };
 
+export type Definition = {
+	filename: string;
+	heading: string;
+	aliases: string[];
+};
+
+export type ConflictingDefinitionsResult = Record<string, Definition[]>;
+
 export const SAME_CAPTURE_GROUP = "$&";
+
+export function checkDuplicateDefinitions(
+	definitions: Definition[]
+): ConflictingDefinitionsResult {
+	const conflictingDefinitions: ConflictingDefinitionsResult = {};
+	const aliasToDefinitions: Map<string, Definition[]> = new Map();
+
+	for (const definition of definitions) {
+		for (const alias of definition.aliases) {
+			if (aliasToDefinitions.has(alias)) {
+				const existingDefinitions = aliasToDefinitions.get(alias);
+
+				// Not possible as aliasToDefinitions[alias] is initialised to [definition] if seen before
+				// Added to satisfy TypeScript
+				if (existingDefinitions === undefined) continue;
+
+				existingDefinitions.push(definition);
+				conflictingDefinitions[alias] = existingDefinitions; // Referring to the same array
+			} else {
+				aliasToDefinitions.set(alias, [definition]);
+			}
+		}
+	}
+
+	return conflictingDefinitions;
+}
 
 // Extracts the definitions from the definitions file
 export function parseDefinitions(

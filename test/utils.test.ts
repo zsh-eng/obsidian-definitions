@@ -3,6 +3,7 @@ import {
 	parseDefinitions,
 	Definition,
 	replaceDefinitions,
+	checkDuplicateDefinitions,
 } from "../utils";
 
 describe("replaceExceptBrackets", () => {
@@ -222,7 +223,7 @@ describe("replaceDefinitions", () => {
 aliases: Alias1, Alias2
   `;
 
-// Note that the text cannot be indented
+	// Note that the text cannot be indented
 	const testFileContent = `
 What's up with Term1 and Alias2 ?
 
@@ -259,20 +260,20 @@ Test test
 		const replaced = replaceDefinitions(definitions, testFileContent);
 		expect(replaced).toContain("[Link to Term1](#term1)");
 	});
-	
+
 	test("replaces at start of file", () => {
-		const fileContent ="Term1"
+		const fileContent = "Term1";
 		const definitions = parseDefinitions("test.md", testContent);
 		const replaced = replaceDefinitions(definitions, fileContent);
-		expect(replaced).toEqual("[[test.md#Term1|Term1]]")
-	})
+		expect(replaced).toEqual("[[test.md#Term1|Term1]]");
+	});
 
 	test("replaces bolded text", () => {
-		const fileContent ="**Term1**"
+		const fileContent = "**Term1**";
 		const definitions = parseDefinitions("test.md", testContent);
 		const replaced = replaceDefinitions(definitions, fileContent);
-		expect(replaced).toEqual("**[[test.md#Term1|Term1]]**")
-	})
+		expect(replaced).toEqual("**[[test.md#Term1|Term1]]**");
+	});
 
 	test("replaces text in bolded text", () => {
 		const fileContent = `
@@ -287,5 +288,100 @@ Test test
 		const definitions = parseDefinitions("test.md", testContent);
 		const replaced = replaceDefinitions(definitions, fileContent);
 		expect(replaced).toContain("[[test.md#Term1|Term1]]");
+	});
+});
+
+describe("checkDuplicateDefinitions", () => {
+	test("should return an empty object for no conflicts", () => {
+		const definitions: Definition[] = [
+			{
+				filename: "file1",
+				heading: "Heading 1",
+				aliases: ["alias1", "alias2"],
+			},
+			{ filename: "file2", heading: "Heading 2", aliases: ["alias3"] },
+		];
+
+		const result = checkDuplicateDefinitions(definitions);
+		expect(result).toEqual({});
+	});
+
+	test("should return conflicting definitions for duplicate aliases", () => {
+		const definitions: Definition[] = [
+			{
+				filename: "file1",
+				heading: "Heading 1",
+				aliases: ["alias1", "alias2"],
+			},
+			{
+				filename: "file2",
+				heading: "Heading 2",
+				aliases: ["alias2", "alias3"],
+			},
+			{
+				filename: "file3",
+				heading: "Heading 3",
+				aliases: ["alias3", "alias4"],
+			},
+			{
+				filename: "file4",
+				heading: "Heading 4",
+				aliases: ["alias1", "alias5"],
+			},
+			{ filename: "file5", heading: "Heading 5", aliases: ["alias5"] },
+		];
+
+		const result = checkDuplicateDefinitions(definitions);
+
+		expect(result).toEqual({
+			alias1: [
+				{
+					filename: "file1",
+					heading: "Heading 1",
+					aliases: ["alias1", "alias2"],
+				},
+				{
+					filename: "file4",
+					heading: "Heading 4",
+					aliases: ["alias1", "alias5"],
+				},
+			],
+			alias2: [
+				{
+					filename: "file1",
+					heading: "Heading 1",
+					aliases: ["alias1", "alias2"],
+				},
+				{
+					filename: "file2",
+					heading: "Heading 2",
+					aliases: ["alias2", "alias3"],
+				},
+			],
+			alias3: [
+				{
+					filename: "file2",
+					heading: "Heading 2",
+					aliases: ["alias2", "alias3"],
+				},
+				{
+					filename: "file3",
+					heading: "Heading 3",
+					aliases: ["alias3", "alias4"],
+				},
+			],
+			alias5: [
+				{
+					filename: "file4",
+					heading: "Heading 4",
+					aliases: ["alias1", "alias5"],
+				},
+				{
+					filename: "file5",
+					heading: "Heading 5",
+					aliases: ["alias5"],
+				},
+			],
+		});
 	});
 });
