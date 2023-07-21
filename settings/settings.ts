@@ -13,9 +13,6 @@ export class DefinitionsSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h1", {
-			text: "Definitions Plugin Settings",
-		});
 
 		this.addFolderSetting();
 	}
