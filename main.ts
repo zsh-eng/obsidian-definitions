@@ -101,7 +101,7 @@ export default class DefinitionsPlugin extends Plugin {
 		);
 
 		const definitions = definitionFilesContent.flatMap((content, index) => {
-			const filename = definitionFiles[index].basename;
+			const filename = definitionFiles[index].path;
 			return parseDefinitions(filename, content);
 		});
 		this.definitions = definitions;
@@ -156,6 +156,16 @@ export default class DefinitionsPlugin extends Plugin {
 		};
 	}
 
+	async openDefinition(definition: Definition) {
+		console.log(definition.filename)
+		const file = this.app.vault.getAbstractFileByPath(definition.filename);
+
+		if (file instanceof TFile) {
+			const newLeaf = true;
+			await this.app.workspace.getLeaf(newLeaf).openFile(file);
+		}
+	}
+
 	async onload() {
 		await this.loadSettings();
 		this.registerSaveCallback();
@@ -173,10 +183,6 @@ export default class DefinitionsPlugin extends Plugin {
 				if (definitionFiles.length === 0) {
 					new Notice("No definition files found");
 					return;
-				}
-
-				for (const file of definitionFiles) {
-					console.log(file.basename);
 				}
 
 				new DefinitionsModal(this.app, this).open();
@@ -240,5 +246,6 @@ class DefinitionsModal extends SuggestModal<Definition> {
 		evt: MouseEvent | KeyboardEvent
 	) {
 		new Notice(`You picked: ${definition.heading}`);
+		this.plugin.openDefinition(definition);
 	}
 }
