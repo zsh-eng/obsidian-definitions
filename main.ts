@@ -184,8 +184,8 @@ export default class DefinitionsPlugin extends Plugin {
 
 		// This command reads the file from a specific folder
 		this.addCommand({
-			id: "search-definitions",
-			name: "Search definitions",
+			id: "open-definition-in-new-tab",
+			name: "Open definition in new tab",
 			callback: () => {
 				const definitionFiles = this.getDefinitionFiles();
 
@@ -206,6 +206,15 @@ export default class DefinitionsPlugin extends Plugin {
 				// Refresh definitions if command is run manually
 				await this.refreshDefinitions();
 				await this.replaceDefinitionsInEditor(editor);
+			},
+		});
+
+		this.addCommand({
+			id: "refresh-definitions",
+			name: "Refresh definitions",
+			callback: async () => {
+				await this.refreshDefinitions();
+				new Notice("Definitions updated!");
 			},
 		});
 	}
