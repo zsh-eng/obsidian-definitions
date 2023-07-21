@@ -137,12 +137,22 @@ export default class DefinitionsPlugin extends Plugin {
 
 		if (typeof save === "function") {
 			saveCommandDefinition.callback = async () => {
-				console.log("hello");
 				if (this.settings.addLinksOnSave) {
 					const editor = this.getEditor();
 					if (!editor) {
 						return;
 					}
+
+					const file = this.app.workspace.getActiveFile();
+					if (!file) {
+						return;
+					}
+					// Don't replace in the definitions folder
+					if (file.path.startsWith(this.settings.definitionsFolder)) {
+						console.log("in definitions folder");
+						return;
+					}
+
 					await this.replaceDefinitionsInEditor(editor);
 				}
 			};
@@ -157,7 +167,6 @@ export default class DefinitionsPlugin extends Plugin {
 	}
 
 	async openDefinition(definition: Definition) {
-		console.log(definition.filename)
 		const file = this.app.vault.getAbstractFileByPath(definition.filename);
 
 		if (file instanceof TFile) {
