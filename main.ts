@@ -155,6 +155,7 @@ export default class DefinitionsPlugin extends Plugin {
 		};
 	}
 
+	// Opens a definition in a new tab
 	async openDefinition(definition: Definition) {
 		const file = this.app.vault.getAbstractFileByPath(definition.filename);
 
@@ -203,6 +204,7 @@ export default class DefinitionsPlugin extends Plugin {
 			},
 		});
 
+		// Replaces the current selection with a link to a definition
 		this.addCommand({
 			id: "add-link-to-definition",
 			name: "Add link to definition",
@@ -217,6 +219,7 @@ export default class DefinitionsPlugin extends Plugin {
 			},
 		});
 
+		// Forces a refresh of the definitions by parsing the files again
 		this.addCommand({
 			id: "refresh-definitions",
 			name: "Refresh definitions",
