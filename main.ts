@@ -216,7 +216,7 @@ export default class DefinitionsPlugin extends Plugin {
 		this.addCommand({
 			id: "Link-definitions-current-file",
 			name: "Link definitions for current file",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, _view: MarkdownView) => {
 				// Refresh definitions if command is run manually
 				await this.refreshDefinitions();
 				await this.replaceDefinitionsInEditor(editor);
@@ -227,7 +227,7 @@ export default class DefinitionsPlugin extends Plugin {
 		this.addCommand({
 			id: "add-link-to-definition",
 			name: "Add link to definition",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, _view: MarkdownView) => {
 				const onChooseCallBack = (definition: Definition) => {
 					new Notice(`You picked: ${definition.heading}`);
 					const link = this.generateDefinitionLink(definition);
@@ -302,7 +302,7 @@ class DefinitionsModal extends SuggestModal<Definition> {
 
 	onChooseSuggestion(
 		definition: Definition,
-		evt: MouseEvent | KeyboardEvent
+		_evt: MouseEvent | KeyboardEvent
 	) {
 		new Notice(`You picked: ${definition.heading}`);
 		this.plugin.openDefinition(definition);
